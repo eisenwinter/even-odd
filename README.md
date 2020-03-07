@@ -10,7 +10,7 @@ A microservice returning even or odd numbers.
 docker run -p 8080:8080 -p 8081:8081 docker.pkg.github.com/eisenwinter/even-odd/even-odd
 ```
 
-Navigate to http://localhost:8080/even
+Navigate to http://localhost:8080/swagger
 
 ## REST API
 
