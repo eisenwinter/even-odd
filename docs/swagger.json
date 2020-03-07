@@ -1,0 +1,69 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This api supplied even or odd numbers.",
+        "title": "even-odd API",
+        "contact": {},
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/eisenwinter/even-odd/blob/master/LICENSE"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/rest/even": {
+            "get": {
+                "description": "Returns a even number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns a even number",
+                "operationId": "even",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.numberResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/odd": {
+            "get": {
+                "description": "Returns a odd number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns a odd number",
+                "operationId": "odd",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.numberResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.numberResponse": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

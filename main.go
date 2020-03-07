@@ -8,7 +8,10 @@ import (
 	"os"
 	"strconv"
 
+	_ "./docs"
 	"./numbergen"
+	"github.com/go-chi/chi"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 var (
@@ -25,6 +28,14 @@ type numberResponse struct {
 	Number int64 `json:"value"`
 }
 
+// EvenHandler godoc
+// @Summary Returns a even number
+// @Description Returns a even number
+// @ID even
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} numberResponse
+// @Router /rest/even [get]
 func evenHandler(w http.ResponseWriter, r *http.Request) {
 	res := numberResponse{
 		Number: gen.Even(),
@@ -38,6 +49,14 @@ func evenHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
+// OddHandler godoc
+// @Summary Returns a odd number
+// @Description Returns a odd number
+// @ID odd
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} numberResponse
+// @Router /rest/odd [get]
 func oddHandler(w http.ResponseWriter, r *http.Request) {
 	res := numberResponse{
 		Number: gen.Odd(),
@@ -61,12 +80,28 @@ func getPort() int {
 	return 8080
 }
 
+// @title even-odd API
+// @version 1.0
+// @description This api supplied even or odd numbers.
+
+// @license.name MIT
+// @license.url https://github.com/eisenwinter/even-odd/blob/master/LICENSE
+
+// @host localhost:8080
+// @BasePath /
+
 func main() {
 	os.Getenv("EVEN_ODD_PORT")
 	gen = numbergen.CreateNumberGen()
-	http.HandleFunc("/even", evenHandler)
-	http.HandleFunc("/odd", oddHandler)
 	addr := fmt.Sprintf(":%d", getPort())
 	Logger.Printf("Starting even-odd on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	r := chi.NewRouter()
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"), //The url pointing to API definition
+	))
+	r.Route("/rest", func(r chi.Router) {
+		r.Get("/even", evenHandler)
+		r.Get("/odd", oddHandler)
+	})
+	log.Fatal(http.ListenAndServe(addr, r))
 }

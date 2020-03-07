@@ -1,0 +1,46 @@
+basePath: /
+definitions:
+  main.numberResponse:
+    properties:
+      value:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This api supplied even or odd numbers.
+  license:
+    name: MIT
+    url: https://github.com/eisenwinter/even-odd/blob/master/LICENSE
+  title: even-odd API
+  version: "1.0"
+paths:
+  /rest/even:
+    get:
+      consumes:
+      - application/json
+      description: Returns a even number
+      operationId: even
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.numberResponse'
+      summary: Returns a even number
+  /rest/odd:
+    get:
+      consumes:
+      - application/json
+      description: Returns a odd number
+      operationId: odd
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.numberResponse'
+      summary: Returns a odd number
+swagger: "2.0"
