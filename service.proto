@@ -1,0 +1,12 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+message NumberResponse {
+    int64 value = 1;
+  }
+  
+
+service EvenOddService {
+    rpc Even(google.protobuf.Empty) returns (NumberResponse);
+    rpc Odd(google.protobuf.Empty)  returns (NumberResponse);
+}

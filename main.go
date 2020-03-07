@@ -1,17 +1,22 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
 
-	_ "./docs"
-	"./numbergen"
+	_ "github.com/eisenwinter/evenodd/docs"
+	service "github.com/eisenwinter/evenodd/grpc"
+	"github.com/eisenwinter/evenodd/numbergen"
 	"github.com/go-chi/chi"
+	"github.com/golang/protobuf/ptypes/empty"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -26,6 +31,20 @@ func init() {
 
 type numberResponse struct {
 	Number int64 `json:"value"`
+}
+
+type grpcService struct{}
+
+func (g *grpcService) Even(context.Context, *empty.Empty) (*service.NumberResponse, error) {
+	return &service.NumberResponse{
+		Value: gen.Even(),
+	}, nil
+}
+
+func (g *grpcService) Odd(context.Context, *empty.Empty) (*service.NumberResponse, error) {
+	return &service.NumberResponse{
+		Value: gen.Odd(),
+	}, nil
 }
 
 // EvenHandler godoc
@@ -71,13 +90,22 @@ func oddHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func getPort() int {
-	if value, exists := os.LookupEnv("EVEN_ODD_PORT"); exists {
+func getHTTPPort() int {
+	if value, exists := os.LookupEnv("EVEN_ODD_HTTP_PORT"); exists {
 		if value, err := strconv.Atoi(value); err == nil {
 			return value
 		}
 	}
 	return 8080
+}
+
+func getGRPCPort() int {
+	if value, exists := os.LookupEnv("EVEN_ODD_GRPC_PORT"); exists {
+		if value, err := strconv.Atoi(value); err == nil {
+			return value
+		}
+	}
+	return 8081
 }
 
 // @title even-odd API
@@ -90,14 +118,29 @@ func getPort() int {
 // @host localhost:8080
 // @BasePath /
 
+func runGrpcService() {
+	addr := fmt.Sprintf(":%d", getGRPCPort())
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		Logger.Println("Skipping GRPC Setup - unable to open TCP port")
+		return
+	}
+	Logger.Printf("Starting even-odd GRPC on %s", addr)
+	grpcServer := grpc.NewServer()
+	service.RegisterEvenOddServiceServer(grpcServer, &grpcService{})
+	grpcServer.Serve(lis)
+}
+
 func main() {
-	os.Getenv("EVEN_ODD_PORT")
 	gen = numbergen.CreateNumberGen()
-	addr := fmt.Sprintf(":%d", getPort())
-	Logger.Printf("Starting even-odd on %s", addr)
+
+	go runGrpcService()
+
+	addr := fmt.Sprintf(":%d", getHTTPPort())
+	Logger.Printf("Starting even-odd REST on %s", addr)
 	r := chi.NewRouter()
 	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"), //The url pointing to API definition
+		httpSwagger.URL("/swagger/doc.json"),
 	))
 	r.Route("/rest", func(r chi.Router) {
 		r.Get("/even", evenHandler)
